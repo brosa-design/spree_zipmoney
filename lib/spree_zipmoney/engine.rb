@@ -15,6 +15,14 @@ module SpreeZipmoney
       end
     end
 
+    initializer "spree.register.payment_methods" do |app|
+      app.config.spree.payment_methods << Spree::PaymentMethod::Zipmoney
+    end
+
+    initializer "spree.zipmoney.permit_params" do |app|
+      Spree::PermittedAttributes.source_attributes << :email
+    end
+
     config.to_prepare &method(:activate).to_proc
   end
 end

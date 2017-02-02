@@ -1,0 +1,7 @@
+<div class="well clearfix">
+  <% param_prefix = "payment_source[#{payment_method.id}]" %>
+
+  <p class="field">
+    <%= hidden_field_tag "#{param_prefix}[email]", @order.email %>
+  </p>
+</div>

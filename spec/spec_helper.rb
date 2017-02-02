@@ -15,9 +15,13 @@ ENV['RAILS_ENV'] = 'test'
 
 require File.expand_path('../dummy/config/environment.rb',  __FILE__)
 
+
 require 'rspec/rails'
 require 'database_cleaner'
+require 'factory_girl'
+FactoryGirl.find_definitions
 require 'ffaker'
+require 'shoulda-matchers'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -29,6 +33,7 @@ require 'spree/testing_support/capybara_ext'
 require 'spree/testing_support/controller_requests'
 require 'spree/testing_support/factories'
 require 'spree/testing_support/url_helpers'
+require 'rspec/active_model/mocks'
 
 # Requires factories defined in lib/spree_zipmoney/factories.rb
 require 'spree_zipmoney/factories'
@@ -90,4 +95,14 @@ RSpec.configure do |config|
 
   config.fail_fast = ENV['FAIL_FAST'] || false
   config.order = "random"
+
+  Shoulda::Matchers.configure do |shoulda_config|
+    shoulda_config.integrate do |with|
+      # Choose a test framework:
+      with.test_framework :rspec
+
+      # Choose one or more libraries:er
+      with.library :rails
+    end
+  end
 end
