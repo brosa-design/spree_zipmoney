@@ -1,5 +1,8 @@
+require 'httparty'
+
 module Spree
   class ZipmoneyController < Spree::BaseController
+    include HTTParty
 
     skip_before_action :verify_authenticity_token, only: :webhook
     before_action :load_order, except: :webhook
@@ -71,27 +74,27 @@ module Spree
     def manage_notification
       notification_json = JSON.parse(@request_json["Message"])
       transaction_id = notification_json["response"]["txn_id"]
-      source = Spree::Zipmoney.find_by(transaction_id: transaction_id)
+      @zipmoney_source = Spree::Zipmoney.find_by(transaction_id: transaction_id)
+      render status: :not_found and return unless @zipmoney_source
       case @request_json["Subject"]
       when "authorise_succeeded"
-        transaction = source.transactions.find_by(action: AUTHORISE_ACTION)
-        transaction.update!(success: true)
+        update_transaction(Spree::Zipmoney::AUTHORIZE_ACTION, true)
       when "authorise_failed"
-        transaction = source.transactions.find_by(action: AUTHORISE_ACTION)
-        transaction.update!(success: false)
+        update_transaction(Spree::Zipmoney::AUTHORIZE_ACTION, false)
       when "cancel_succeeded"
-        transaction = source.transactions.find_by(action: VOID_ACTION)
-        transaction.update!(success: true)
+        update_transaction(Spree::Zipmoney::VOID_ACTION, true)
       when "cancel_failed"
-        transaction = source.transactions.find_by(action: VOID_ACTION)
-        transaction.update!(success: false)
+        update_transaction(Spree::Zipmoney::VOID_ACTION, false)
       when "charge_succeeded", "capture_succeeded"
-        transaction = source.transactions.find_by(action: CAPTURE_ACTION)
-        transaction.update!(success: true)
+        update_transaction(Spree::Zipmoney::CAPTURE_ACTION, true)
       when "charge_failed", "capture_failed"
-        transaction = source.transactions.find_by(action: CAPTURE_ACTION)
-        transaction.update!(success: false)
+        update_transaction(Spree::Zipmoney::CAPTURE_ACTION, false)
       end
+    end
+
+    def update_transaction(transaction_action, successful)
+      transaction = @zipmoney_source.transactions.find_by(action: transaction_action)
+      transaction.update!(success: successful)
     end
   end
 end

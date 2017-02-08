@@ -1,6 +1,245 @@
 require 'spec_helper'
 
 describe Spree::ZipmoneyController, type: :controller do
+  describe "#webhook" do
+    let(:subscribe_url) { "http://www.google.com" }
+
+    def send_request
+      request.env["RAW_POST_DATA"]  = params.to_json
+      spree_post :webhook
+    end
+
+    before do
+      allow(HTTParty).to receive(:get).with(subscribe_url)
+    end
+
+    context "when SubscriptionConfirmation" do
+      let(:params) { { "Type" => "SubscriptionConfirmation", "SubscribeURL" => subscribe_url } }
+
+      describe "expects to assign" do
+        before { send_request }
+
+        it { expect(assigns[:request_json]).to eq(params) }
+      end
+
+      describe "expects to receive" do
+        it { expect(HTTParty).to receive(:get).with(subscribe_url) }
+
+        after { send_request }
+      end
+    end
+
+    context "when Notification" do
+      let(:zipmoney_source) { mock_model(Spree::Zipmoney) }
+      let(:transactions) { double(ActiveRecord::Relation) }
+      let(:transaction) { mock_model(Spree::ZipmoneyTransaction) }
+
+      before do
+        allow(Spree::Zipmoney).to receive(:find_by).with(transaction_id: transaction_id).and_return(zipmoney_source)
+      end
+
+      context "when authorise_succeeded" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "authorise_succeeded", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::AUTHORIZE_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: true).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when authorise_failed" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "authorise_failed", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::AUTHORIZE_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: false).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when cancel_succeeded" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "cancel_succeeded", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::VOID_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: true).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when cancel_failed" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "cancel_failed", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::VOID_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: false).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when charge_succeeded" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "charge_succeeded", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::CAPTURE_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: true).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when charge_failed" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "charge_failed", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::CAPTURE_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: false).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when capture_succeeded" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "capture_succeeded", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::CAPTURE_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: true).and_return(true) }
+
+          after { send_request }
+        end
+      end
+
+      context "when capture_failed" do
+        let(:transaction_id) { "12345" }
+        let(:params) { { "Type" => "Notification", "Subject" => "capture_failed", "Message" => { "response" => { "txn_id" => transaction_id } }.to_json } }
+
+        before do
+          allow(zipmoney_source).to receive(:transactions).and_return(transactions)
+          allow(transactions).to receive(:find_by).and_return(transaction)
+          allow(transaction).to receive(:update!).and_return(true)
+        end
+
+        describe "expects to assign" do
+          before { send_request }
+
+          it { expect(assigns[:zipmoney_source]).to eq(zipmoney_source) }
+        end
+
+        describe "expects to receive" do
+          it { expect(zipmoney_source).to receive(:transactions).and_return(transactions) }
+          it { expect(transactions).to receive(:find_by).with(action: Spree::Zipmoney::CAPTURE_ACTION).and_return(transaction) }
+          it { expect(transaction).to receive(:update!).with(success: false).and_return(true) }
+
+          after { send_request }
+        end
+      end
+    end
+  end
+
   describe "#success" do
     let(:order) { mock_model Spree::Order }
     let(:orders) { double ActiveRecord::Relation }
