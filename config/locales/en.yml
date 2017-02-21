@@ -8,6 +8,8 @@ en:
       payment_declined: The payment from ZipMoney was declined.
       payment_under_review: The payment from ZipMoney is under review.
       payment_cancelled: The payment from ZipMoney was cancelled.
+      payment_details:
+        name: zipMoney
     zipmoney_payment_method:
       no_amount_allocation: No amount allocated for payment
       successful_action: ZipMoney payment was successfully able to %{action}
