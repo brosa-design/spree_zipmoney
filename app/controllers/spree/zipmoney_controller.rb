@@ -8,6 +8,7 @@ module Spree
     before_action :load_order, except: :webhook
 
     def webhook
+      Rails.logger.info request.raw_post
       @request_json = JSON.parse(request.raw_post) rescue {}
       if @request_json["Type"] == "SubscriptionConfirmation"
         call_subscribe_url
