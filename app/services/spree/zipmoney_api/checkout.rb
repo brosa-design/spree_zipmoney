@@ -61,7 +61,7 @@ module Spree
           @object.params.order.id = order.number
           @object.params.order.tax = ("%.2f" % order.additional_tax_total).to_f
           @object.params.order.shipping_value = ("%.2f" % order.shipment_total).to_f
-          @object.params.order.total = ("%.2f" % order.total).to_f
+          @object.params.order.total = ("%.2f" % payment.amount).to_f
         end
 
         def build_line_item_params

@@ -6,6 +6,7 @@ module Spree
 
     skip_before_action :verify_authenticity_token, only: :webhook
     before_action :load_order, except: :webhook
+    before_action :invalidate_zipmoney_payment, only: [:error, :decline, :cancel]
 
     def webhook
       Rails.logger.info request.raw_post
@@ -62,6 +63,10 @@ module Spree
     def load_order
       @order = Spree::Order.incomplete.includes(:adjustments, line_items: [variant: [:images, :option_values, :product]]).lock(true).find_by(number: params[:id])
       redirect_to(spree.cart_path) && return unless @order
+    end
+
+    def invalidate_zipmoney_payment
+      @order.payments.zipmoney.map(&:invalidate!)
     end
 
     def completion_route

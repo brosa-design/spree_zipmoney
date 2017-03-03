@@ -25,7 +25,7 @@ Spree::CheckoutController.class_eval do
       source_params = params.require(:payment_source).permit![zipmoney_payment_method.id.to_s]
       @order.payments.create!(
         payment_method: zipmoney_payment_method,
-        amount: @order.outstanding_balance,
+        amount: @order.outstanding_balance - @order.total_applied_store_credit,
         state: 'checkout',
         source_attributes: source_params
       )
