@@ -12,7 +12,7 @@ Spree::CheckoutController.class_eval do
         params.delete(:payment_source)
 
         zipmoney_source = @order.payments.zipmoney.checkout.first.try(:source)
-        if zipmoney_source && zipmoney_source.checkout(@order.outstanding_balance, currency: current_currency, auto_capture: zipmoney_payment_method.auto_capture?)
+        if zipmoney_source && zipmoney_source.checkout(@order.outstanding_balance - @order.total_applied_store_credit, currency: current_currency, auto_capture: zipmoney_payment_method.auto_capture?)
           redirect_to zipmoney_source.redirect_url and return
         else
           flash[:error] = zipmoney_source.errors.full_messages.to_sentence if zipmoney_source
