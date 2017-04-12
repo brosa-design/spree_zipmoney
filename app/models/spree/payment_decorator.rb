@@ -7,7 +7,7 @@ Spree::Payment.class_eval do
   state_machine.after_transition to: :invalid, do: :cancel_zipmoney_payment, if: :payment_method_zipmoney?
 
   def cancel_zipmoney_payment
-    if source.transaction_id
+    if source.transaction_id && source.cancelable?
       zipmoney_service = Spree::ZipmoneyService.new(source, {})
       if zipmoney_service.cancel
         source.transactions.create!(action: Spree::Zipmoney::VOID_ACTION, amount: source.amount_allocated)

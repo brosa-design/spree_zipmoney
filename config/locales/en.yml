@@ -17,3 +17,4 @@ en:
       unable_to_find: Unable to find zipMoney payment
       unable_to_find_for_action: Unable to find zipMoney payment to %{action}
       unable_to_void: Unable to void payment with authorization code %{auth_code}
+      unable_to_invalidate: Unable to invalidate payment

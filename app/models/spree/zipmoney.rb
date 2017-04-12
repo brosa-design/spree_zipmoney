@@ -90,6 +90,18 @@ module Spree
       end
     end
 
+    def cancelable?
+      authorized? || captured?
+    end
+
+    def authorized?
+      transactions.find_by(action: AUTHORIZE_ACTION)
+    end
+
+    def captured?
+      transactions.find_by(action: CAPTURE_ACTION)
+    end
+
     def actions
       [CAPTURE_ACTION, VOID_ACTION]
     end
