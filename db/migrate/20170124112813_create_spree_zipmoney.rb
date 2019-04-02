@@ -1,4 +1,4 @@
-class CreateSpreeZipmoney < ActiveRecord::Migration
+class CreateSpreeZipmoney < SpreeExtension::Migration[4.2]
   def change
     create_table :spree_zipmoneys do |t|
       t.references :payment_method, index: true

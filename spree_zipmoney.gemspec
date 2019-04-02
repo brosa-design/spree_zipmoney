@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_zipmoney'
-  s.version     = '3.1.0'
+  s.version     = '3.7.0'
   s.summary     = 'Zipmoney Integration for SpreeCommerce'
   s.description = 'Zipmoney Integration for SpreeCommerce'
   s.required_ruby_version = '>= 2.1.0'
@@ -17,10 +17,13 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.requirements << 'none'
 
-  s.add_dependency 'spree_core', '~> 3.1.2'
   s.add_dependency 'zipMoney', '~> 1.0.7'
   s.add_dependency 'httparty', '~> 0.14.0'
 
+  spree_version = '>= 3.1.0', '< 4.0.0'
+  s.add_dependency 'spree_core', spree_version
+
+  s.add_development_dependency 'appraisal'
   s.add_development_dependency 'byebug'
   s.add_development_dependency 'capybara', '~> 2.6'
   s.add_development_dependency 'coffee-rails'
